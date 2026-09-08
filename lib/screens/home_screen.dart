@@ -13,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const User _alex = User(
+  static const User _tranvihung = User(
     id: 'u1',
     name: 'Tran Vi Hung',
     username: 'tranvihung',
@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final List<Post> _posts = [
     const Post(
       id: 'p1',
-      user: _alex,
+      user: _tranvihung,
       content:
           'Beautiful day for a walk! 🌸 The cherry blossoms right outside University Hall are in full bloom today.',
       image:
@@ -101,13 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(user: _alex),
+                    builder: (context) => const ProfileScreen(user: _tranvihung),
                   ),
                 );
               },
               child: CircleAvatar(
                 radius: 16,
-                backgroundImage: _alex.avatarProvider,
+                backgroundImage: _tranvihung.avatarProvider,
                 backgroundColor: const Color(0xFFE2E8F8),
               ),
             ),
