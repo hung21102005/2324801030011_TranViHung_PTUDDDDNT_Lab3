@@ -32,9 +32,42 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify Drawer is opened and shows user details and menu
-    expect(find.text('Tran Vi Hung'), findsWidgets);
+    expect(find.textContaining('Tran Vi Hung'), findsWidgets);
     expect(find.text('Categories & Topics'), findsOneWidget);
     expect(find.text('Saved Posts'), findsOneWidget);
     expect(find.text('Flutter Drawer Contract'), findsOneWidget);
+  });
+
+  testWidgets(
+      'Tapping My Profile in Drawer and then back arrow navigates safely without black screen',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(const SociallyApp());
+
+    // 1. Open drawer
+    await tester.tap(find.byTooltip('Open Drawer').first);
+    await tester.pumpAndSettle();
+
+    // 2. Tap My Profile menu item
+    await tester.tap(find.text('My Profile'));
+    await tester.pumpAndSettle();
+
+    // 3. Verify we are on Profile screen
+    expect(find.text('Profile'), findsWidgets);
+    expect(find.text('Edit Profile'), findsOneWidget);
+
+    // 4. Tap the back arrow on Profile screen
+    await tester.tap(find.byTooltip('Back to Home Feed'));
+    await tester.pumpAndSettle();
+
+    // 5. Verify we are back on Home Feed, NOT a black/empty screen
+    expect(find.text('Socially'), findsOneWidget);
+    expect(find.text('Create Post'), findsOneWidget);
   });
 }

@@ -173,6 +173,8 @@ class SavedPostsScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF151C27),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           '@${post.user.username} • ${post.categoryTag}',
@@ -180,6 +182,8 @@ class SavedPostsScreen extends StatelessWidget {
                             fontSize: 11,
                             color: Color(0xFF777587),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),

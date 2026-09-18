@@ -260,12 +260,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Text(
-                                      post.user.name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                        color: Color(0xFF151C27),
+                                    Flexible(
+                                      child: Text(
+                                        post.user.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: Color(0xFF151C27),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     const SizedBox(width: 4),
@@ -278,11 +282,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 Row(
                                   children: [
-                                    Text(
-                                      '@${post.user.username} • 10m',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF777587),
+                                    Flexible(
+                                      child: Text(
+                                        '@${post.user.username} • 10m',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF777587),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     const SizedBox(width: 8),

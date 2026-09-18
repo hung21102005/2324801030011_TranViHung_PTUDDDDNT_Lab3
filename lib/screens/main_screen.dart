@@ -17,11 +17,21 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  int _previousIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _changeTab(int index) {
+    if (_currentIndex != index) {
+      setState(() {
+        _previousIndex = _currentIndex;
+        _currentIndex = index;
+      });
+    }
+  }
 
   static const User currentUser = User(
     id: 'u1',
-    name: 'Tran Vi Hung',
+    name: 'Tran Vi Hung - 2324801030011',
     username: 'tranvihung',
     avatar: 'assets/avatar.jpg',
     bio: 'Software Engineering Student',
@@ -69,10 +79,10 @@ class _MainScreenState extends State<MainScreen> {
       content:
           'Working on my Flutter project today. Clean architecture + state management feeling super solid! 💻✨',
       image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuA_f3Xap0TBmAWACuVipukIHcDq7mUiEUj_mThCnMmwDSyvWaWD6QJi5S9Pa7GBBDwv5n7aNiTh7tIHevDrAmWeqfZD3IVVAOzNy4Up92ZF902Bl6o-JPJ9UaJY1F7piNvEHkbovvEqiLf_61GkvtsHkvuvigUHA1Nv0IJ_WM7N5QfDEarTmh14_-3pbItHw4nZNI3aWAlSVk8Daah3bJVJbYTs8dM2aSGh7eOsjyMX0Uc_i9DHefZz',
-      likes: 85,
-      comments: 12,
-      isLiked: true,
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuDYQ-uOQG3aNf-p6U3jL8W3L7XzB6pEwB5-2Y9F1bA9c8V8t_Lz7N8r8u6Q5W4E3R2T1Y0U9I8O7P6A5S4D3F2G1H0J9K8L7Z6X5C4V3B2N1M0',
+      likes: 45,
+      comments: 7,
+      isLiked: false,
       isBookmarked: false,
       categoryTag: '#Tech',
     ),
@@ -80,10 +90,10 @@ class _MainScreenState extends State<MainScreen> {
       id: 'p3',
       user: annaUser,
       content:
-          'Coffee and coding ☕\nAt Student Union Café • Testing local state persistence and navigation.',
+          'Group study session in the library 3rd floor. Coffee and notes ready! ☕📚',
       image: '',
-      likes: 64,
-      comments: 8,
+      likes: 31,
+      comments: 5,
       isLiked: false,
       isBookmarked: false,
       categoryTag: '#StudySprint',
@@ -91,12 +101,12 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   void _updatePost(Post updated) {
-    setState(() {
-      final index = _posts.indexWhere((p) => p.id == updated.id);
-      if (index != -1) {
-        _posts[index] = updated;
-      }
-    });
+    final idx = _posts.indexWhere((p) => p.id == updated.id);
+    if (idx != -1) {
+      setState(() {
+        _posts[idx] = updated;
+      });
+    }
   }
 
   void _deletePost(int index) {
@@ -124,7 +134,7 @@ class _MainScreenState extends State<MainScreen> {
         onPostDeleted: _deletePost,
         onCreatePost: _addPost,
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-        onOpenProfile: () => setState(() => _currentIndex = 3),
+        onOpenProfile: () => _changeTab(3),
       ),
 
       // Tab 1: Categories
@@ -138,51 +148,57 @@ class _MainScreenState extends State<MainScreen> {
       SavedPostsScreen(
         posts: _posts,
         onPostUpdated: _updatePost,
-        onExplore: () => setState(() => _currentIndex = 1),
+        onExplore: () => _changeTab(1),
         onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
       ),
 
       // Tab 3: Profile
-      const ProfileScreen(user: currentUser),
+      ProfileScreen(
+        user: currentUser,
+        isTab: true,
+        onBack: () => _changeTab(_previousIndex == 3 ? 0 : _previousIndex),
+        onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
     ];
 
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: AppDrawer(
-        user: currentUser,
-        selectedIndex: _currentIndex,
-        savedCount: savedCount,
-        onSelectTab: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        onOpenProfile: () {
-          setState(() {
-            _currentIndex = 3;
-          });
-        },
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          _changeTab(0);
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawer: AppDrawer(
+          user: currentUser,
+          selectedIndex: _currentIndex,
+          savedCount: savedCount,
+          onSelectTab: (index) => _changeTab(index),
+          onOpenProfile: () => _changeTab(3),
+        ),
+        body: IndexedStack(
+          index: _currentIndex,
+          children: screens,
+        ),
+        bottomNavigationBar: _buildBottomNav(),
+        floatingActionButton: _currentIndex == 0
+            ? FloatingActionButton.extended(
+                onPressed: () async {
+                  final newPost =
+                      await Navigator.pushNamed(context, '/create-post');
+                  if (newPost != null && newPost is Post) {
+                    _addPost(newPost);
+                  }
+                },
+                backgroundColor: const Color(0xFF3525CD),
+                foregroundColor: Colors.white,
+                icon: const Icon(Icons.add),
+                label: const Text('Create Post'),
+              )
+            : null,
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
-      ),
-      bottomNavigationBar: _buildBottomNav(),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                final newPost =
-                    await Navigator.pushNamed(context, '/create-post');
-                if (newPost != null && newPost is Post) {
-                  _addPost(newPost);
-                }
-              },
-              backgroundColor: const Color(0xFF3525CD),
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.add),
-              label: const Text('Create Post'),
-            )
-          : null,
     );
   }
 
@@ -247,11 +263,7 @@ class _MainScreenState extends State<MainScreen> {
     final isSelected = _currentIndex == index;
 
     return InkWell(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
+      onTap: () => _changeTab(index),
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),

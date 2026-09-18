@@ -6,8 +6,17 @@ import 'post_detail_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
+  final VoidCallback? onBack;
+  final VoidCallback? onOpenDrawer;
+  final bool isTab;
 
-  const ProfileScreen({super.key, required this.user});
+  const ProfileScreen({
+    super.key,
+    required this.user,
+    this.onBack,
+    this.onOpenDrawer,
+    this.isTab = false,
+  });
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -148,10 +157,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.white,
         elevation: 0.5,
         leading: IconButton(
+          tooltip: widget.isTab ? 'Back to Home Feed' : 'Back',
           icon: const Icon(Icons.arrow_back, color: Color(0xFF151C27)),
           onPressed: () {
-            // Quay lại màn hình trước đó
-            Navigator.pop(context);
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else if (widget.onBack != null) {
+              widget.onBack!();
+            } else if (widget.onOpenDrawer != null) {
+              widget.onOpenDrawer!();
+            }
           },
         ),
         title: const Text(
@@ -162,6 +177,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         actions: [
+          if (widget.isTab && widget.onOpenDrawer != null)
+            IconButton(
+              tooltip: 'Open Drawer',
+              icon: const Icon(Icons.menu, color: Color(0xFF151C27)),
+              onPressed: widget.onOpenDrawer,
+            ),
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Color(0xFF464555)),
             onPressed: () {

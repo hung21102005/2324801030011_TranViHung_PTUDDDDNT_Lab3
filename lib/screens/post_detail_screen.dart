@@ -171,12 +171,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         children: [
                                           Row(
                                             children: [
-                                              Text(
-                                                _currentPost.user.name,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                  color: Color(0xFF151C27),
+                                              Flexible(
+                                                child: Text(
+                                                  _currentPost.user.name,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: Color(0xFF151C27),
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               const SizedBox(width: 4),

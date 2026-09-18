@@ -496,35 +496,41 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 14,
-                        backgroundImage: post.user.avatarProvider,
-                        backgroundColor: const Color(0xFFE2E8F8),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            post.user.name,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF151C27),
-                            ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 14,
+                          backgroundImage: post.user.avatarProvider,
+                          backgroundColor: const Color(0xFFE2E8F8),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                post.user.name,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF151C27),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const Text(
+                                '10 min ago',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFF777587),
+                                ),
+                              ),
+                            ],
                           ),
-                          const Text(
-                            '10 min ago',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF777587),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                   Container(
                     padding:
