@@ -26,4 +26,24 @@ class User {
     }
     return AssetImage(avatar);
   }
+
+  User copyWith({
+    String? id,
+    String? name,
+    String? username,
+    String? avatar,
+    String? bio,
+    int? followers,
+    int? following,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      username: username ?? this.username,
+      avatar: avatar ?? this.avatar,
+      bio: bio ?? this.bio,
+      followers: followers ?? this.followers,
+      following: following ?? this.following,
+    );
+  }
 }

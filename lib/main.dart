@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'screens/create_post_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   runApp(const SociallyApp());
@@ -16,11 +16,11 @@ class SociallyApp extends StatelessWidget {
       title: 'Socially',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3525CD)),
         useMaterial3: true,
       ),
       routes: {
-        '/': (context) => const HomeScreen(),
+        '/': (context) => const MainScreen(),
         '/create-post': (context) => const CreatePostScreen(),
       },
     );

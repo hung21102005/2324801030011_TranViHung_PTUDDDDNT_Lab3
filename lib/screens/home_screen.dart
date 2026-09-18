@@ -1,87 +1,58 @@
 import 'package:flutter/material.dart';
 
+import '../models/category.dart';
 import '../models/post.dart';
 import '../models/user.dart';
 import 'post_detail_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final List<Post> posts;
+  final User currentUser;
+  final Function(Post) onPostUpdated;
+  final Function(int) onPostDeleted;
+  final Function(Post) onCreatePost;
+  final VoidCallback onOpenDrawer;
+  final VoidCallback onOpenProfile;
+
+  const HomeScreen({
+    super.key,
+    required this.posts,
+    required this.currentUser,
+    required this.onPostUpdated,
+    required this.onPostDeleted,
+    required this.onCreatePost,
+    required this.onOpenDrawer,
+    required this.onOpenProfile,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const User _tranvihung = User(
-    id: 'u1',
-    name: 'Tran Vi Hung',
-    username: 'tranvihung',
-    avatar: 'assets/avatar.jpg',
-    bio: 'Software Engineering Student',
-    followers: 120,
-    following: 80,
-  );
-
-  static const User _minh = User(
-    id: 'u2',
-    name: 'Minh Tran',
-    username: 'minhtran',
-    avatar: '',
-    bio: 'Flutter Developer',
-    followers: 85,
-    following: 40,
-  );
-
-  static const User _anna = User(
-    id: 'u3',
-    name: 'Anna',
-    username: 'annak',
-    avatar: '',
-    bio: 'CS Student',
-    followers: 64,
-    following: 30,
-  );
-
-  late final List<Post> _posts = [
-    const Post(
-      id: 'p1',
-      user: _tranvihung,
-      content:
-          'Beautiful day for a walk! 🌸 The cherry blossoms right outside University Hall are in full bloom today.',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuALy_h2qXaZLOv0eluHLcB1sSUtkyoKc4PoWbwcdx10U61AyNVuAMNMBVXsU_FEDO-Wrazke-LJxJrpODGgTe42MXEPh_RWpfEQk5Z1fJn6v7lfkFt5HmSdNN_UQ_KgJW7z4BJeBF27s5o2KTPeZtYxL1vlb3yjNh2S-I9sGoF-sywwiE1Za2PBd4DogM0xAW9bqQjC19n81JUHkz0PUJT_sJkel8oq605ojyhDBk73AzaAemWRo0hz',
-      likes: 120,
-      comments: 18,
-    ),
-    const Post(
-      id: 'p2',
-      user: _minh,
-      content:
-          'Working on my Flutter project today. Clean architecture + state management feeling super solid! 💻✨',
-      image:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuA_f3Xap0TBmAWACuVipukIHcDq7mUiEUj_mThCnMmwDSyvWaWD6QJi5S9Pa7GBBDwv5n7aNiTh7tIHevDrAmWeqfZD3IVVAOzNy4Up92ZF902Bl6o-JPJ9UaJY1F7piNvEHkbovvEqiLf_61GkvtsHkvuvigUHA1Nv0IJ_WM7N5QfDEarTmh14_-3pbItHw4nZNI3aWAlSVk8Daah3bJVJbYTs8dM2aSGh7eOsjyMX0Uc_i9DHefZz',
-      likes: 85,
-      comments: 12,
-    ),
-    const Post(
-      id: 'p3',
-      user: _anna,
-      content:
-          'Coffee and coding ☕\nAt Student Union Café • Testing local state persistence',
-      image: '',
-      likes: 64,
-      comments: 8,
-    ),
-  ];
+  String _selectedCategory = 'All';
 
   @override
   Widget build(BuildContext context) {
+    // Filter posts by selected category chip
+    final displayPosts = _selectedCategory == 'All'
+        ? widget.posts
+        : widget.posts
+            .where((p) =>
+                p.categoryTag.toLowerCase() == _selectedCategory.toLowerCase())
+            .toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9FF),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: Color(0xFF151C27)),
+          onPressed: widget.onOpenDrawer,
+          tooltip: 'Open Drawer',
+        ),
         title: const Text(
           'Socially',
           style: TextStyle(
@@ -92,53 +63,133 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Color(0xFF464555)),
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Hiện tại bạn không có thông báo mới.'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(user: _tranvihung),
-                  ),
-                );
-              },
+              onTap: widget.onOpenProfile,
               child: CircleAvatar(
                 radius: 16,
-                backgroundImage: _tranvihung.avatarProvider,
+                backgroundImage: widget.currentUser.avatarProvider,
                 backgroundColor: const Color(0xFFE2E8F8),
               ),
             ),
           ),
         ],
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _posts.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          final post = _posts[index];
-          return _buildPostCard(context, post);
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          // Thực hành Named Route
-          final newPost = await Navigator.pushNamed(context, '/create-post');
+      body: Column(
+        children: [
+          // Category Quick Filter Chips
+          _buildCategoryFilterRow(),
 
-          // Nhận kết quả từ CreatePostScreen và cập nhật UI
-          if (newPost != null && newPost is Post) {
-            setState(() {
-              _posts.insert(0, newPost);
-            });
-          }
+          // Feed List
+          Expanded(
+            child: displayPosts.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.feed_outlined,
+                              size: 48, color: Color(0xFF777587)),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Chưa có bài viết cho $_selectedCategory',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF151C27),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedCategory = 'All';
+                              });
+                            },
+                            child: const Text('Xem tất cả bài viết'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: displayPosts.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      return _buildPostCard(context, displayPosts[index]);
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilterRow() {
+    final categories = [
+      'All',
+      ...CategoryItem.defaultCategories.map((c) => c.tag),
+    ];
+
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFF0F0F0)),
+        ),
+      ),
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final cat = categories[index];
+          final isSelected = _selectedCategory == cat;
+
+          return ChoiceChip(
+            label: Text(cat),
+            selected: isSelected,
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  _selectedCategory = cat;
+                });
+              }
+            },
+            selectedColor: const Color(0xFF3525CD),
+            backgroundColor: const Color(0xFFF0F3FF),
+            labelStyle: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? Colors.white : const Color(0xFF464555),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(
+                color: isSelected
+                    ? const Color(0xFF3525CD)
+                    : const Color(0xFFE2E8F8),
+              ),
+            ),
+            showCheckmark: false,
+          );
         },
-        backgroundColor: const Color(0xFF4F46E5),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Create Post'),
       ),
     );
   }
@@ -149,70 +200,116 @@ class _HomeScreenState extends State<HomeScreen> {
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F8)),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final updatedPost = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => PostDetailScreen(post: post),
             ),
           );
+          if (updatedPost != null && updatedPost is Post) {
+            widget.onPostUpdated(updatedPost);
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Avatar, Tên, Username
+              // Header: Avatar, Tên, Category Tag, More Menu
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: const Color(0xFF8455EF),
-                    backgroundImage: post.user.avatarProvider,
-                    child: post.user.avatar.isEmpty
-                        ? Text(
-                            post.user.name.substring(0, 2).toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              post.user.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF151C27),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.verified,
-                              size: 16,
-                              color: Color(0xFF3525CD),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '@${post.user.username} • 10 min ago',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF777587),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProfileScreen(user: post.user),
                           ),
-                        ),
-                      ],
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: const Color(0xFF8455EF),
+                            backgroundImage: post.user.avatarProvider,
+                            child: post.user.avatar.isEmpty
+                                ? Text(
+                                    post.user.name
+                                        .substring(0, 2)
+                                        .toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      post.user.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: Color(0xFF151C27),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.verified,
+                                      size: 16,
+                                      color: Color(0xFF3525CD),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '@${post.user.username} • 10m',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF777587),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF0F3FF),
+                                        borderRadius:
+                                            BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        post.categoryTag,
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF3525CD),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   PopupMenuButton<String>(
@@ -223,15 +320,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     onSelected: (value) {
                       if (value == 'delete') {
-                        setState(() {
-                          _posts.remove(post);
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Đã xóa bài viết'),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
+                        final index =
+                            widget.posts.indexWhere((p) => p.id == post.id);
+                        if (index != -1) {
+                          widget.onPostDeleted(index);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Đã xóa bài viết'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        }
                       }
                     },
                     itemBuilder: (context) => [
@@ -298,57 +397,130 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       // Like
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.favorite_border,
-                            size: 20,
-                            color: Color(0xFF777587),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () {
+                          final isLiked = !post.isLiked;
+                          final updated = post.copyWith(
+                            isLiked: isLiked,
+                            likes: isLiked
+                                ? post.likes + 1
+                                : (post.likes > 0 ? post.likes - 1 : 0),
+                          );
+                          widget.onPostUpdated(updated);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4),
+                          child: Row(
+                            children: [
+                              Icon(
+                                post.isLiked
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                size: 20,
+                                color: post.isLiked
+                                    ? const Color(0xFF8F0055)
+                                    : const Color(0xFF777587),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${post.likes}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  color: post.isLiked
+                                      ? const Color(0xFF8F0055)
+                                      : const Color(0xFF464555),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${post.likes}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              color: Color(0xFF464555),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 14),
                       // Comment
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.chat_bubble_outline,
-                            size: 20,
-                            color: Color(0xFF777587),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${post.comments}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              color: Color(0xFF464555),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () async {
+                          final updatedPost = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  PostDetailScreen(post: post),
                             ),
+                          );
+                          if (updatedPost != null && updatedPost is Post) {
+                            widget.onPostUpdated(updatedPost);
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.chat_bubble_outline,
+                                size: 20,
+                                color: Color(0xFF777587),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${post.comments}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  color: Color(0xFF464555),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 14),
                       // Share
-                      const Icon(
-                        Icons.share_outlined,
-                        size: 20,
-                        color: Color(0xFF777587),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.share_outlined,
+                          size: 20,
+                          color: Color(0xFF777587),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Đã sao chép liên kết bài viết của ${post.user.name}!'),
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
-                  const Icon(
-                    Icons.bookmark_border,
-                    size: 20,
-                    color: Color(0xFF777587),
+                  IconButton(
+                    icon: Icon(
+                      post.isBookmarked
+                          ? Icons.bookmark
+                          : Icons.bookmark_border,
+                      size: 20,
+                      color: post.isBookmarked
+                          ? const Color(0xFF3525CD)
+                          : const Color(0xFF777587),
+                    ),
+                    onPressed: () {
+                      final isBookmarked = !post.isBookmarked;
+                      final updated =
+                          post.copyWith(isBookmarked: isBookmarked);
+                      widget.onPostUpdated(updated);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(isBookmarked
+                              ? 'Đã lưu bài viết vào mục Đã lưu'
+                              : 'Đã bỏ lưu bài viết'),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
